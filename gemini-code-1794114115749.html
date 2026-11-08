@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบค้นหาข้อมูลสุขภาพ - พยาบาลขึ้นดอย</title>
+    <!-- Google Fonts: Prompt & Mali -->
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600&family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #ff8fab;
+            --primary-dark: #fb6f92;
+            --bg-color: #fff0f3;
+            --card-bg: #ffffff;
+            --text-color: #2b2d42;
+            --danger-bg: #ffe3e6;
+            --danger-text: #d90429;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Prompt', 'Mali', sans-serif;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 16px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        header h1 {
+            font-size: 1.5rem;
+            color: var(--primary-dark);
+            margin-bottom: 4px;
+        }
+        header p {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .search-box {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(255, 143, 171, 0.15);
+            margin-bottom: 20px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 1rem;
+            border: 2px solid #ffccd5;
+            border-radius: 12px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-box input:focus {
+            border-color: var(--primary-dark);
+        }
+        .status-offline {
+            font-size: 0.8rem;
+            text-align: center;
+            margin-top: 8px;
+            color: #52b788;
+            font-weight: 500;
+        }
+        .student-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-left: 6px solid var(--primary-dark);
+        }
+        .student-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 4px;
+        }
+        .student-sub {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 12px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+        .info-item span {
+            color: #6c757d;
+        }
+        .alert-section {
+            background-color: var(--danger-bg);
+            color: var(--danger-text);
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+        }
+        .alert-section strong {
+            display: block;
+            margin-bottom: 2px;
+        }
+        .contact-box {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .btn-call {
+            flex: 1;
+            display: inline-block;
+            text-align: center;
+            background-color: #52b788;
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 6px rgba(82, 183, 136, 0.3);
+        }
+        .btn-call.emergency {
+            background-color: var(--danger-text);
+            box-shadow: 0 2px 6px rgba(217, 4, 41, 0.3);
+        }
+        .no-result {
+            text-align: center;
+            color: #adb5bd;
+            padding: 30px;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🩺 ระบบพยาบาลฉุกเฉินขึ้นดอย</h1>
+        <p>ค้นหาข้อมูลสุขภาพและเบอร์ติดต่อ (ใช้งานแบบออฟไลน์ได้)</p>
+    </header>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="พิมพ์ชื่อจริง, ชื่อเล่น หรือรหัส 4 ตัวท้าย..." oninput="filterStudents()">
+        <div class="status-offline" id="offlineStatus">🟢 โหมดออฟไลน์พร้อมใช้งาน (ข้อมูลบันทึกในเครื่องแล้ว)</div>
+    </div>
+
+    <div id="resultsContainer">
+        <!-- ผลลัพธ์การค้นหาจะแสดงที่นี่ -->
+    </div>
+</div>
+
+<script>
+    // ตัวอย่างฐานข้อมูลนักศึกษา (สามารถนำข้อมูลจาก Google Sheets มาแปลงเป็นรูปแบบ JSON นี้ฝังไว้ในเว็บ)
+    const studentsData = [
+        {
+            name: "นายสมชาย ใจดี",
+            nickname: "ชาย",
+            id: "671610101",
+            last4: "0101",
+            program: "เศรษฐศาสตร์บัณฑิต",
+            religion: "พุทธ",
+            diet: "ปกติ",
+            weight: "65 กก.",
+            height: "175 ซม.",
+            phone: "0812345678",
+            disease: "หอบหืด (พกยา Inhaler ตลอดเวลา)",
+            drugAllergy: "แพ้ยา Paracetamol",
+            otherAllergy: "แพ้อากาศ / ฝุ่นละออง",
+            medicalHistory: "เคยเข้ารับการรักษาอาการหอบหืดกำเริบเฉียบพลันเมื่อ 2 ปีก่อน",
+            emergName: "นางสมศรี ใจดี",
+            emergRelation: "มารดา",
+            emergPhone: "0898765432"
+        },
+        {
+            name: "นางสาวกัญญา ามยิ่ง",
+            nickname: "กัญญา",
+            id: "671610199",
+            last4: "0199",
+            program: "เศรษฐศาสตร์บัณฑิต",
+            religion: "พุทธ",
+            diet: "มังสวิรัติ",
+            weight: "48 กก.",
+            height: "160 ซม.",
+            phone: "0823456789",
+            disease: "- (ไม่มีโรคประจำตัว)",
+            drugAllergy: "ไม่มี",
+            otherAllergy: "แพ้อาหารทะเล (กุ้ง, ปู)",
+            medicalHistory: "ไม่มีประวัติการรักษาสำคัญใน 3-5 ปี",
+            emergName: "นายประเสริฐ งามยิ่ง",
+            emergRelation: "บิดา",
+            emergPhone: "0881112233"
+        }
+        // สามารถเพิ่มรายชื่ออื่นๆ ต่อเนื่องในรูปแบบนี้ได้เลยครับ
+    ];
+
+    function renderStudents(data) {
+        const container = document.getElementById('resultsContainer');
+        if (data.length === 0) {
+            container.innerHTML = `<div class="no-result">ไม่พบข้อมูลที่ค้นหา ลองพิมพ์รหัส 4 ตัวท้าย หรือชื่อเล่นใหม่อีกครั้ง</div>`;
+            return;
+        }
+
+        let html = '';
+        data.forEach(s => {
+            html += `
+                <div class="student-card">
+                    <div class="student-name">${s.name} (${s.nickname})</div>
+                    <div class="student-sub">รหัส: ${s.id} | หลักสูตร: ${s.program}</div>
+                    
+                    <div class="info-grid">
+                        <div class="info-item"><span>ศาสนา:</span> ${s.religion}</div>
+                        <div class="info-item"><span>อาหาร:</span> ${s.diet}</div>
+                        <div class="info-item"><span>น้ำหนัก/ส่วนสูง:</span> ${s.weight} / ${s.height}</div>
+                    </div>
+
+                    <div class="alert-section">
+                        <strong>⚠️ ข้อมูลสุขภาพสำคัญ:</strong>
+                        • โรคประจำตัว: ${s.disease}<br>
+                        • แพ้ยา: ${s.drugAllergy}<br>
+                        • แพ้อื่นๆ: ${s.otherAllergy}<br>
+                        • ประวัติรักษา (3-5 ปี): ${s.medicalHistory}
+                    </div>
+
+                    <div class="alert-section" style="background-color: #fff3cd; color: #856404;">
+                        <strong>📞 ผู้ติดต่อฉุกเฉิน:</strong>
+                        ${s.emergName} (${s.emergRelation})
+                    </div>
+
+                    <div class="contact-box">
+                        <a href="tel:${s.phone}" class="btn-call">📞 โทรหาน้อง (${s.phone})</a>
+                        <a href="tel:${s.emergPhone}" class="btn-call emergency">🚨 โทรหาผู้ปกครอง (${s.emergPhone})</a>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    // โหลดข้อมูลทั้งหมดแสดงผลตอนเปิดเว็บครั้งแรก
+    window.onload = function() {
+        renderStudents(studentsData);
+    };
+
+    // ฟังก์ชันกรองข้อมูลแบบเรียลไทม์ (รองรับทั้งชื่อจริง, ชื่อเล่น, รหัส 4 ตัวท้าย)
+    function filterStudents() {
+        const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+        if (keyword === "") {
+            renderStudents(studentsData);
+            return;
+        }
+
+        const filtered = studentsData.filter(s => {
+            return s.name.toLowerCase().includes(keyword) ||
+                   s.nickname.toLowerCase().includes(keyword) ||
+                   s.id.includes(keyword) ||
