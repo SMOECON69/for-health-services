@@ -152,7 +152,7 @@
 
     <div class="search-box">
         <input type="text" id="searchInput" placeholder="พิมพ์ชื่อจริง, ชื่อเล่น หรือรหัส 4 ตัวท้าย..." oninput="filterStudents()">
-        <div class="status-offline" id="offlineStatus">🟢 โหมดออฟไลน์พร้อมใช้งาน (ข้อมูลบันทึกในเครื่องแล้ว)</div>
+        <div class="status-offline" id="offlineStatus">🟢 โหมดออฟไลน์พร้อมใช้งาน (โหลดข้อมูลจากฐานข้อมูลครบแล้ว)</div>
     </div>
 
     <div id="resultsContainer">
@@ -161,47 +161,141 @@
 </div>
 
 <script>
-    // ตัวอย่างฐานข้อมูลนักศึกษา (สามารถนำข้อมูลจาก Google Sheets มาแปลงเป็นรูปแบบ JSON นี้ฝังไว้ในเว็บ)
+    // ฐานข้อมูลนักศึกษาที่ดึงมาจาก Google Sheets จริง
     const studentsData = [
         {
-            name: "นายสมชาย ใจดี",
-            nickname: "ชาย",
-            id: "671610101",
-            last4: "0101",
-            program: "เศรษฐศาสตร์บัณฑิต",
+            name: "ปพิชญา ผาทอง",
+            nickname: "ชมพู",
+            id: "391610132",
+            last4: "0132",
+            program: "หลักสูตรปกติ",
             religion: "พุทธ",
-            diet: "ปกติ",
-            weight: "65 กก.",
-            height: "175 ซม.",
-            phone: "0812345678",
-            disease: "หอบหืด (พกยา Inhaler ตลอดเวลา)",
-            drugAllergy: "แพ้ยา Paracetamol",
-            otherAllergy: "แพ้อากาศ / ฝุ่นละออง",
-            medicalHistory: "เคยเข้ารับการรักษาอาการหอบหืดกำเริบเฉียบพลันเมื่อ 2 ปีก่อน",
-            emergName: "นางสมศรี ใจดี",
-            emergRelation: "มารดา",
-            emergPhone: "0898765432"
+            diet: "ทั่วไป",
+            weight: "52 กก.",
+            height: "165 ซม.",
+            phone: "0957535199",
+            disease: "-",
+            drugAllergy: "-",
+            otherAllergy: "-",
+            medicalHistory: "กระดูกและข้อ",
+            emergName: "ปรมินทร์ ผาทอง",
+            emergRelation: "บิดา",
+            emergPhone: "0851599824"
         },
         {
-            name: "นางสาวกัญญา ามยิ่ง",
-            nickname: "กัญญา",
-            id: "671610199",
-            last4: "0199",
-            program: "เศรษฐศาสตร์บัณฑิต",
+            name: "Min Khant",
+            nickname: "Mink",
+            id: "601615524",
+            last4: "5524",
+            program: "หลักสูตรนานาชาติ",
             religion: "พุทธ",
-            diet: "มังสวิรัติ",
-            weight: "48 กก.",
-            height: "160 ซม.",
-            phone: "0823456789",
-            disease: "- (ไม่มีโรคประจำตัว)",
-            drugAllergy: "ไม่มี",
-            otherAllergy: "แพ้อาหารทะเล (กุ้ง, ปู)",
-            medicalHistory: "ไม่มีประวัติการรักษาสำคัญใน 3-5 ปี",
-            emergName: "นายประเสริฐ งามยิ่ง",
-            emergRelation: "บิดา",
-            emergPhone: "0881112233"
+            diet: "ทั่วไป",
+            weight: "96 กก.",
+            height: "177 ซม.",
+            phone: "0823140766",
+            disease: "-",
+            drugAllergy: "-",
+            otherAllergy: "-",
+            medicalHistory: "None",
+            emergName: "Luthor",
+            emergRelation: "Friend",
+            emergPhone: "0644841265"
+        },
+        {
+            name: "Lu Min Thar",
+            nickname: "Luthor",
+            id: "691515519",
+            last4: "5519",
+            program: "หลักสูตรนานาชาติ",
+            religion: "พุทธ",
+            diet: "ทั่วไป",
+            weight: "63 กก.",
+            height: "178 ซม.",
+            phone: "0644841264",
+            disease: "-",
+            drugAllergy: "-",
+            otherAllergy: "-",
+            medicalHistory: "-",
+            emergName: "Khant Wai Yan",
+            emergRelation: "Brother",
+            emergPhone: "0815647047"
+        },
+        {
+            name: "กชพร อิ่มเอิบ",
+            nickname: "อิงดาว",
+            id: "691610001",
+            last4: "0001",
+            program: "หลักสูตรปกติ",
+            religion: "พุทธ",
+            diet: "ทั่วไป",
+            weight: "42 กก.",
+            height: "154 ซม.",
+            phone: "0917832389",
+            disease: "-",
+            drugAllergy: "-",
+            otherAllergy: "-",
+            medicalHistory: "-",
+            emergName: "นางอัจฉราวรรณ อิ่มเอิบ",
+            emergRelation: "มารดา",
+            emergPhone: "0979244269"
+        },
+        {
+            name: "กตัญชลี สุดถนอม",
+            nickname: "เหนือ",
+            id: "691610002",
+            last4: "0002",
+            program: "หลักสูตรปกติ",
+            religion: "พุทธ",
+            diet: "ทั่วไป",
+            weight: "68 กก.",
+            height: "163 ซม.",
+            phone: "0838506569",
+            disease: "-",
+            drugAllergy: "-",
+            otherAllergy: "-",
+            medicalHistory: "-",
+            emergName: "วิไลวรรณรอดสีเสน",
+            emergRelation: "มารดา",
+            emergPhone: "0635360358"
+        },
+        {
+            name: "กนกลดา บูรพาไพศาล",
+            nickname: "จ๊ะจ๋า",
+            id: "691610004",
+            last4: "0004",
+            program: "หลักสูตรปกติ",
+            religion: "พุทธ",
+            diet: "ทั่วไป",
+            weight: "49 กก.",
+            height: "163 ซม.",
+            phone: "0611571127",
+            disease: "-",
+            drugAllergy: "-",
+            otherAllergy: "ระบบย่อยอาหาร",
+            medicalHistory: "-",
+            emergName: "ชุรีกร ทองเชื้อ",
+            emergRelation: "มารดา",
+            emergPhone: "0634497914"
+        },
+        {
+            name: "กมลชนก ดองโพธิ์",
+            nickname: "บีม",
+            id: "691610005",
+            last4: "0005",
+            program: "หลักสูตรปกติ",
+            religion: "พุทธ",
+            diet: "ทั่วไป",
+            weight: "64 กก.",
+            height: "166 ซม.",
+            phone: "0994683699",
+            disease: "-",
+            drugAllergy: "-",
+            otherAllergy: "ไม่มี",
+            medicalHistory: "-",
+            emergName: "เกสร น่าชม",
+            emergRelation: "มารดา",
+            emergPhone: "0617425953"
         }
-        // สามารถเพิ่มรายชื่ออื่นๆ ต่อเนื่องในรูปแบบนี้ได้เลยครับ
     ];
 
     function renderStudents(data) {
@@ -264,3 +358,12 @@
             return s.name.toLowerCase().includes(keyword) ||
                    s.nickname.toLowerCase().includes(keyword) ||
                    s.id.includes(keyword) ||
+                   s.last4.includes(keyword);
+        });
+
+        renderStudents(filtered);
+    }
+</script>
+
+</body>
+</html>
